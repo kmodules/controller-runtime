@@ -144,7 +144,13 @@ func createMergePatch(originalJSON, modifiedJSON []byte, _ interface{}) ([]byte,
 }
 
 func createStrategicMergePatch(originalJSON, modifiedJSON []byte, dataStruct interface{}) ([]byte, error) {
-	return strategicpatch.CreateTwoWayMergePatch(originalJSON, modifiedJSON, dataStruct)
+	data, err := strategicpatch.CreateTwoWayMergePatch(originalJSON, modifiedJSON, dataStruct)
+	if err == nil {
+		var u unstructured.Unstructured
+		_ = json.Unmarshal(data, &u)
+		fmt.Println(u.GetKind(), u.GetNamespace()+"/"+u.GetName(), string(data))
+	}
+	return data, err
 }
 
 // MergeFrom creates a Patch that patches using the merge-patch strategy with the given object as base.
