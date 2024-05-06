@@ -18,6 +18,7 @@ package client
 
 import (
 	"fmt"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
 	jsonpatch "github.com/evanphx/json-patch/v5"
 	"k8s.io/apimachinery/pkg/types"
@@ -133,7 +134,13 @@ func (s *mergeFromPatch) Data(obj Object) ([]byte, error) {
 }
 
 func createMergePatch(originalJSON, modifiedJSON []byte, _ interface{}) ([]byte, error) {
-	return jsonpatch.CreateMergePatch(originalJSON, modifiedJSON)
+	data, err := jsonpatch.CreateMergePatch(originalJSON, modifiedJSON)
+	if err == nil {
+		var u unstructured.Unstructured
+		_ = json.Unmarshal(data, &u)
+		fmt.Println(u.GetKind(), u.GetNamespace()+"/"+u.GetName(), string(data))
+	}
+	return data, err
 }
 
 func createStrategicMergePatch(originalJSON, modifiedJSON []byte, dataStruct interface{}) ([]byte, error) {
